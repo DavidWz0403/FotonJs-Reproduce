@@ -1,0 +1,175 @@
+#pragma version =0.4.4;
+#pragma allow-post-modification;
+#pragma compute-asm-ltr;
+
+#include "tact_UnlockDogWon.headers.fc";
+#include "tact_UnlockDogWon.stdlib.fc";
+#include "tact_UnlockDogWon.storage.fc";
+
+;;
+;; Contract UnlockDogWon functions
+;;
+
+(slice) $UnlockDogWon$_contract_init() impure inline_ref {
+    var (($self'owner)) = (null());
+    $self'owner = __tact_context_get_sender();
+    return ($self'owner);
+}
+
+((slice), int) $UnlockDogWon$_fun_balance((slice) $self) impure inline_ref {
+    var (($self'owner)) = $self;
+    return (($self'owner), __tact_my_balance());
+}
+
+((slice), ()) $UnlockDogWon$_fun_requireOwner((slice) $self) impure inline_ref {
+    var (($self'owner)) = $self;
+    throw_unless(132, ( __tact_slice_eq_bits($self'owner, __tact_context_get_sender()) ));
+    return (($self'owner), ());
+}
+
+((slice), slice) $UnlockDogWon$_fun_owner((slice) $self) impure inline_ref {
+    var (($self'owner)) = $self;
+    return (($self'owner), $self'owner);
+}
+
+;;
+;; Receivers of a Contract UnlockDogWon
+;;
+
+((slice), ()) $UnlockDogWon$_internal_text_16056c1ab7eff2403c1334eb0f538fb19198316dc570f5ef9c2bd66d8e58af36((slice) $self) impure inline {
+    var ($self'owner) = $self;
+    throw_unless(7878, ($Context$_get_value(__tact_context_get()) >= 800000000));
+    $global_emit($PaymentEvent$_store_cell($PaymentEvent$_constructor_purchasedBy($Context$_get_sender(__tact_context_get()))));
+    return (($self'owner), ());
+}
+
+(((slice)), ()) $UnlockDogWon$_internal_binary_PayFee((slice) $self, (int) $msg) impure inline {
+    var ($self'owner) = $self;
+    var ($msg'amount) = $msg;
+    throw_unless(7878, ($msg'amount >= 800000000));
+    $global_emit($PaymentEvent$_store_cell($PaymentEvent$_constructor_purchasedBy($Context$_get_sender(__tact_context_get()))));
+    return (($self'owner), ());
+}
+
+((slice), ()) $UnlockDogWon$_internal_text_beb2935a82089b154d32f99c4377aa960aa115366cc2c602755e36b97f505cec((slice) $self) impure inline {
+    var ($self'owner) = $self;
+    ($self'owner)~$UnlockDogWon$_fun_requireOwner();
+    $global_send($SendParameters$_constructor_to_bounce_value_mode(__tact_context_get_sender(), true, ((__tact_my_balance() - $Context$_get_value(__tact_context_get())) - 10000000), (2 + 64)));
+    return (($self'owner), ());
+}
+
+(((slice)), ()) $UnlockDogWon$_internal_binary_Deploy((slice) $self, (int) $deploy) impure inline {
+    var ($self'owner) = $self;
+    var ($deploy'queryId) = $deploy;
+    ($self'owner)~$UnlockDogWon$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId)));
+    return (($self'owner), ());
+}
+
+;;
+;; Get methods of a Contract UnlockDogWon
+;;
+
+_ %balance() method_id(104128) {
+    var self = $UnlockDogWon$_contract_load();
+    var res = self~$UnlockDogWon$_fun_balance();
+    return res;
+}
+
+_ %owner() method_id(83229) {
+    var self = $UnlockDogWon$_contract_load();
+    var res = self~$UnlockDogWon$_fun_owner();
+    return res;
+}
+
+_ supported_interfaces() method_id {
+    return (
+        "org.ton.introspection.v0"H >> 128,
+        "org.ton.abi.ipfs.v0"H >> 128,
+        "org.ton.deploy.lazy.v0"H >> 128,
+        "org.ton.debug.v0"H >> 128,
+        "org.ton.chain.workchain.v0"H >> 128,
+        "org.ton.ownable"H >> 128
+    );
+}
+
+_ get_abi_ipfs() method_id {
+    return "ipfs://QmeF1dUNvGwteVetrAxFfZ8XLEDNPGEtfeB4VHkAdrqE87";
+}
+
+_ lazy_deployment_completed() method_id {
+    return get_data().begin_parse().load_int(1);
+}
+
+;;
+;; Routing of a Contract UnlockDogWon
+;;
+
+((slice), int) $UnlockDogWon$_contract_router_internal((slice) self, int msg_bounced, slice in_msg) impure inline_ref {
+    ;; Handle bounced messages
+    if (msg_bounced) {
+        return (self, true);
+    }
+    
+    ;; Parse incoming message
+    int op = 0;
+    if (slice_bits(in_msg) >= 32) {
+        op = in_msg.preload_uint(32);
+    }
+    
+    
+    ;; Receive PayFee message
+    if (op == 2679325397) {
+        var msg = in_msg~$PayFee$_load();
+        self~$UnlockDogWon$_internal_binary_PayFee(msg);
+        return (self, true);
+    }
+    
+    ;; Receive Deploy message
+    if (op == 2490013878) {
+        var msg = in_msg~$Deploy$_load();
+        self~$UnlockDogWon$_internal_binary_Deploy(msg);
+        return (self, true);
+    }
+    
+    ;; Text Receivers
+    if (op == 0) {
+        var text_op = slice_hash(in_msg);
+        
+        ;; Receive "payment" message
+        if (text_op == 0x16056c1ab7eff2403c1334eb0f538fb19198316dc570f5ef9c2bd66d8e58af36) {
+            self~$UnlockDogWon$_internal_text_16056c1ab7eff2403c1334eb0f538fb19198316dc570f5ef9c2bd66d8e58af36();
+            return (self, true);
+        }
+        
+        ;; Receive "withdraw safe" message
+        if (text_op == 0xbeb2935a82089b154d32f99c4377aa960aa115366cc2c602755e36b97f505cec) {
+            self~$UnlockDogWon$_internal_text_beb2935a82089b154d32f99c4377aa960aa115366cc2c602755e36b97f505cec();
+            return (self, true);
+        }
+    }
+    
+    return (self, false);
+}
+
+() recv_internal(int msg_value, cell in_msg_cell, slice in_msg) impure {
+    
+    ;; Context
+    var cs = in_msg_cell.begin_parse();
+    var msg_flags = cs~load_uint(4);
+    var msg_bounced = -(msg_flags & 1);
+    slice msg_sender_addr = __tact_verify_address(cs~load_msg_addr());
+    __tact_context = (msg_bounced, msg_sender_addr, msg_value, cs);
+    __tact_context_sender = msg_sender_addr;
+    
+    ;; Load contract data
+    var self = $UnlockDogWon$_contract_load();
+    
+    ;; Handle operation
+    int handled = self~$UnlockDogWon$_contract_router_internal(msg_bounced, in_msg);
+    
+    ;; Throw if not handled
+    throw_unless(130, handled);
+    
+    ;; Persist state
+    $UnlockDogWon$_contract_store(self);
+}
